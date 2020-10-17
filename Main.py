@@ -83,29 +83,32 @@ def decrypt(message):
     return output
 
 
-print("Hi there! Welcome to this python cryptography program")
-print("Encrypt and decrypt text files with a single command, try now...")
-print("Use 'e' to encrypt and 'd' to decrypt, followed by a file name. Use 'q' to quit the program")
-print("For example enter 'e air' to encrypt the text file named air, entering '.txt' after file name is not required")
-while True:
-    inp = input("\n'e' or 'd', use 'q' to exit>>")
-    split_input = inp.strip().lower().split()
-    if inp.lower().strip() == "q":
-        sys.exit()
-    elif (inp.lower().strip() == "e") or (inp.lower().strip() == "d"):
-        print("A file name was expected")
-    elif len(split_input) == 2:
-        file_tag = split_input[1]
-        if not file_tag.endswith(".txt"):
-            file_tag = file_tag + ".txt"
-        if split_input[0] == "e":
+def multiple():
+    single = False
+    inp2 = input("Do you want to encrypt or decrypt multiple files (e/d)>>").strip().lower()
+    if (inp2 == "back") or (inp2 == "exit"):
+        return
+    if inp2 == "e":
+        inp3 = input("Enter two or more file names separated by a space to encrypt>>").strip()
+        file_names = inp3.split()
+        if len(file_names) == 1:
+            print("You can directly use 'e' to encrypt a single file")
+            single = True
+        for i in range(len(file_names)):
+            if not file_names[i].endswith(".txt"):
+                file_names[i] += ".txt"
             try:
-                file_r = open(file_tag, "r")
-                file_r.close()
+                dummy = open(file_names[i], "r")
+                dummy.close()
             except FileNotFoundError:
-                print(f"Could not find {file_tag}, check if you misspelled the file name and if the file is in the same directory as this program")
-                continue
-            print(f"\nEnter a password to securely encrypt {file_tag}")
+                print(f"Could not find {file_names[i]}")
+                print("Check if you misspelled the file name and if the file is in the same directory as this program")
+                break
+        else:
+            if single:
+                print(f"\nEnter a password to securely encrypt the {file_names[0]}")
+            else:
+                print("\nEnter a password to securely encrypt the files")
             print("You will require the same password while decrypting, make sure you remember it")
             print("You cannot retrieve your data if you forget the password")
             password = input("\nEnter a password>>")
@@ -113,38 +116,129 @@ while True:
                 password = input("Enter a valid password>>")
             else:
                 key_generate(password)
-            if encrypt_file(file_tag) == 1:
-                clear()
-                print(f"\nSuccessfully encrypted {file_tag}")
-        elif split_input[0] == "d":
+            for i in range(len(file_names)):
+                if encrypt_file(file_names[i]) != 1:
+                    print(f"Something went wrong while encrypting {file_names[i]}, try again")
+                    break
+            else:
+                print("Encryption was successful")
+
+    elif inp2 == "d":
+        inp3 = input("Enter two or more file names separated by a space to decrypt>>").strip()
+        file_names = inp3.split()
+        if len(file_names) == 1:
+            print("You can directly use 'd' to decrypt a single file")
+        for i in range(len(file_names)):
+            if not file_names[i].endswith(".txt"):
+                file_names[i] += ".txt"
             try:
-                file_r = open(file_tag, "r")
-                file_r.close()
+                dummy = open(file_names[i], "r")
+                dummy.close()
             except FileNotFoundError:
-                print(f"Could not find {file_tag}, check if you misspelled the file name and if the file is in the same directory as this program")
-                continue
-            password = input(f"Enter the password which was used to encrypt {file_tag}>>")
+                print(f"\nCould not find {file_names[i]}")
+                print("Check if you misspelled the file name and if the file is in the same directory as this program")
+                break
+        else:
+            if single:
+                password = input(f"Enter the password which was used to encrypt {file_names[0]}>>").strip()
+            else:
+                password = input(f"Enter the password which was used to encrypt the files>>").strip()
             key_generate(password)
             while True:
-                decryption = decrypt_file(file_tag)
-                if decryption == -1:
-                    print("Incorrect password, try again")
-                    password = input("\nEnter password again, you can enter 'help' for advanced help>>").strip()
-                    if password.lower() == "help":
-                        print("\nThe below given information is only applicable if you are sure that you entered the right password, but could not decrypt your file...")
-                        print("\nThe file might already be decrypted, if not it might be that the encrypted file was tampered")
-                        print("Your data is not recoverable if it was the latter case")
-                        confirm = input("\nPress any key to quit advanced options>>")
-                        break
-                    else:
-                        key_generate(password)
-                elif decryption == 1:
+                for i in range(len(file_names)):
+                    decryption = decrypt_file(file_names[i])
+                    if decryption == -1:
+                        print("Incorrect password, enter the same password which was used to encrypt all the files")
+                        password = input("\nEnter password again, you can enter 'help' for advanced help>>").strip()
+                        if password.lower() == "help":
+                            print("\nThe below given information is only applicable if you are sure that you entered the right password, but could not decrypt your files...")
+                            print("\nOne or more files might already be decrypted, if not it might be that some of the encrypted files were tampered")
+                            print("Your data is not recoverable if it was the latter case")
+                            input("\nPress any key to quit advanced options>>")
+                            return
+                        else:
+                            key_generate(password)
+                else:
                     clear()
-                    print(f"\nSuccessfully decrypted {file_tag}")
+                    print(f"\nDecryption was successful")
                     print("If you did not retrieve your data, it might be due to multilayer encryption")
-                    print("You can try decrypting repeatedly till you retrieve your data")
+                    print("You can try decrypting a file repeatedly till you retrieve your data")
                     break
+
+    else:
+        print("Expected 'e' for encryption or 'd' for decryption")
+
+
+def main():
+    print("Hi there! Welcome to this python cryptography program")
+    print("Encrypt and decrypt text files with a single command, try now...")
+    print("Use 'e' to encrypt and 'd' to decrypt, followed by a file name. Use 'q' to quit the program")
+    print("For example enter 'e air' to encrypt the text file named air, entering '.txt' after file name is not required")
+    print("Use 'm' to encrypt or decrypt multiple files at once")
+    while True:
+        inp = input("\n'e', 'd' or 'm', use 'q' to exit>>")
+        split_input = inp.strip().lower().split()
+        if inp.lower().strip() == "q":
+            sys.exit()
+        elif (inp.lower().strip() == "e") or (inp.lower().strip() == "d"):
+            print("A file name was expected")
+        elif inp.lower().strip() == "m":
+            multiple()
+        elif len(split_input) == 2:
+            file_tag = split_input[1]
+            if not file_tag.endswith(".txt"):
+                file_tag = file_tag + ".txt"
+            if split_input[0] == "e":
+                try:
+                    file_r = open(file_tag, "r")
+                    file_r.close()
+                except FileNotFoundError:
+                    print(f"Could not find {file_tag}, check if you misspelled the file name and if the file is in the same directory as this program")
+                    continue
+                print(f"\nEnter a password to securely encrypt {file_tag}")
+                print("You will require the same password while decrypting, make sure you remember it")
+                print("You cannot retrieve your data if you forget the password")
+                password = input("\nEnter a password>>")
+                while validate_password(password) != 1:
+                    password = input("Enter a valid password>>")
+                else:
+                    key_generate(password)
+                if encrypt_file(file_tag) == 1:
+                    clear()
+                    print(f"\nSuccessfully encrypted {file_tag}")
+            elif split_input[0] == "d":
+                try:
+                    file_r = open(file_tag, "r")
+                    file_r.close()
+                except FileNotFoundError:
+                    print(f"Could not find {file_tag}, check if you misspelled the file name and if the file is in the same directory as this program")
+                    continue
+                password = input(f"Enter the password which was used to encrypt {file_tag}>>")
+                key_generate(password)
+                while True:
+                    decryption = decrypt_file(file_tag)
+                    if decryption == -1:
+                        print("Incorrect password, try again")
+                        password = input("\nEnter password again, you can enter 'help' for advanced help>>").strip()
+                        if password.lower() == "help":
+                            print("\nThe below given information is only applicable if you are sure that you entered the right password, but could not decrypt your file...")
+                            print("\nThe file might already be decrypted, if not it might be that the encrypted file was tampered")
+                            print("Your data is not recoverable if it was the latter case")
+                            input("\nPress any key to quit advanced options>>")
+                            break
+                        else:
+                            key_generate(password)
+                    elif decryption == 1:
+                        clear()
+                        print(f"\nSuccessfully decrypted {file_tag}")
+                        print("If you did not retrieve your data, it might be due to multilayer encryption")
+                        print("You can try decrypting repeatedly till you retrieve your data")
+                        break
+            else:
+                print(f"{inp} is not a recognised command")
         else:
             print(f"{inp} is not a recognised command")
-    else:
-        print(f"{inp} is not a recognised command")
+
+
+if __name__ == "__main__":
+    main()
