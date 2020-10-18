@@ -121,6 +121,7 @@ def multiple():
                     print(f"Something went wrong while encrypting {file_names[i]}, try again")
                     break
             else:
+                clear()
                 print("Encryption was successful")
 
     elif inp2 == "d":
@@ -128,6 +129,7 @@ def multiple():
         file_names = inp3.split()
         if len(file_names) == 1:
             print("You can directly use 'd' to decrypt a single file")
+            single = True
         for i in range(len(file_names)):
             if not file_names[i].endswith(".txt"):
                 file_names[i] += ".txt"
@@ -140,31 +142,36 @@ def multiple():
                 break
         else:
             if single:
-                password = input(f"Enter the password which was used to encrypt {file_names[0]}>>").strip()
+                password = input(f"\nEnter the password which was used to encrypt {file_names[0]}>>").strip()
             else:
-                password = input(f"Enter the password which was used to encrypt the files>>").strip()
+                password = input(f"\nEnter the password which was used to encrypt the files>>").strip()
             key_generate(password)
-            while True:
-                for i in range(len(file_names)):
-                    decryption = decrypt_file(file_names[i])
-                    if decryption == -1:
-                        print("Incorrect password, enter the same password which was used to encrypt all the files")
-                        password = input("\nEnter password again, you can enter 'help' for advanced help>>").strip()
-                        if password.lower() == "help":
-                            print("\nThe below given information is only applicable if you are sure that you entered the right password, but could not decrypt your files...")
-                            print("\nOne or more files might already be decrypted, if not it might be that some of the encrypted files were tampered")
-                            print("Your data is not recoverable if it was the latter case")
-                            input("\nPress any key to quit advanced options>>")
-                            return
-                        else:
-                            key_generate(password)
-                else:
+            for i in range(len(file_names)):
+                decryption = decrypt_file(file_names[i])
+                if decryption == -1:
                     clear()
-                    print(f"\nDecryption was successful")
-                    print("If you did not retrieve your data, it might be due to multilayer encryption")
-                    print("You can try decrypting a file repeatedly till you retrieve your data")
-                    break
-
+                    print("\nOne or more files could not be decrypted")
+                    print("Most probably the password that you entered might be incorrect")
+                    print("You must enter the same password which was used to encrypt all the files")
+                    password = input("\nYou can try 'help' for more info or just press 'Enter' to return to the main screen>>").strip().lower()
+                    if password == "help":
+                        print("\nThe below given information is only applicable if you are sure that you entered the right password, but could not decrypt your files...")
+                        print("\nOne or more files might already be decrypted, if not it might be that some of the encrypted files were tampered")
+                        print("Your data is not recoverable if it was the latter case")
+                        input("\nPress 'Enter' to return to main screen>>")
+                        break
+                    else:
+                        break
+                elif decryption == 1:
+                    encrypt_file(file_names[i])
+            else:
+                for i in range(len(file_names)):
+                    decrypt_file(file_names[i])
+                clear()
+                print(f"\nDecryption was successful")
+                print("If you did not retrieve your data, it might be due to multilayer encryption")
+                print("You can try decrypting a file repeatedly till you retrieve your data")
+                return
     else:
         print("Expected 'e' for encryption or 'd' for decryption")
 
@@ -224,7 +231,7 @@ def main():
                             print("\nThe below given information is only applicable if you are sure that you entered the right password, but could not decrypt your file...")
                             print("\nThe file might already be decrypted, if not it might be that the encrypted file was tampered")
                             print("Your data is not recoverable if it was the latter case")
-                            input("\nPress any key to quit advanced options>>")
+                            input("\nPress 'Enter' to quit advanced options>>")
                             break
                         else:
                             key_generate(password)
@@ -235,9 +242,9 @@ def main():
                         print("You can try decrypting repeatedly till you retrieve your data")
                         break
             else:
-                print(f"{inp} is not a recognised command")
+                print("That was not expected, try again...")
         else:
-            print(f"{inp} is not a recognised command")
+            print("That was not expected, try again...")
 
 
 if __name__ == "__main__":
